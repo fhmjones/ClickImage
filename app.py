@@ -14,8 +14,8 @@ from flask import Flask
 from os import environ
 
 import dash
-import dash_core_components as dcc
-import dash_html_components as html
+from dash import dcc
+from dash import html
 import plotly.graph_objects as go
 from dash.dependencies import Input, Output
 
@@ -38,12 +38,23 @@ app = dash.Dash(
 
 app.layout = html.Div([
     dcc.Markdown('''
-        ### image annotation
-
-        Indicate something on an image or plot.
-        Click on the image/plot to make a marker. Click on an existing marker to remove it.
-
+        ### Image or data annotation
+        
+        This app simply demonstrates image or dataset annotation capabilities of Plotly Dash library.
+        Any image could be added with our without 2D graph axes, including "behind" a plot of data.
+        Save as PNG file keeps all annotations, so students can make decisions or choices and save to submit for assessment or discussion.
+        
+        ---------
+        - Mouse-over a control reveals a tool tip.
+        - Select **Zoom**, then click once to add a marker. Click it again to remove.
+        - Select **Zoom**, then click-drag to zoom in.
+        - **Autoscale** restores default zoom. Add marker when in zoom also restores default zoom.
+        - Use **Pan** after zooming in.
+        - Select **Draw Line** or **Draw Circle** then click-drag to draw a line or circle.
+        - Click a line or circle to move it, or erase it with **Erase**.
+        - **Download plot as png** does just that.
         ----------
+        
         '''),
 
     dcc.Graph(
@@ -55,9 +66,10 @@ app.layout = html.Div([
             'showTips': True,  # True, False
             'displayModeBar': True,  # True, False, 'hover'
             'watermark': False,
-            'modeBarButtonsToRemove': ['resetAxis', 'pan2d', 'resetScale2d', 'select2d', 'lasso2d', 'zoom2d',
-                                       'zoomIn2d', 'zoomOut2d', 'autoScale2d', 'hoverCompareCartesian',
+            'modeBarButtonsToRemove': ['resetAxis', 'resetScale2d', 'select2d', 'lasso2d', 'zoomIn2d',
+                                       'zoomOut2d', 'hoverCompareCartesian',
                                        'hoverClosestCartesian'],
+            'modeBarButtonsToAdd': ['drawline', 'drawcircle', 'eraseshape']
         }
     ),
 
@@ -70,21 +82,14 @@ app.layout = html.Div([
             'showTips': True,  # True, False
             'displayModeBar': True,  # True, False, 'hover'
             'watermark': False,
-            'modeBarButtonsToRemove': ['resetAxis', 'pan2d', 'resetScale2d', 'select2d', 'lasso2d', 'zoom2d',
-                                       'zoomIn2d', 'zoomOut2d', 'autoScale2d', 'hoverCompareCartesian',
+            'modeBarButtonsToRemove': ['resetAxis', 'resetScale2d', 'select2d', 'lasso2d', 'zoomIn2d',
+                                       'zoomOut2d', 'hoverCompareCartesian',
                                        'hoverClosestCartesian'],
+            'modeBarButtonsToAdd': ['drawline', 'drawcircle', 'eraseshape'] 
         }
-    ),
+    )
 
-    dcc.Markdown('''
-        ----
-        
-        ### Questions students could consider
-
-        Later
-  
-        ''')
-], style={'width': '600px'}
+], style={'width': '800px'}
 )
 
 
@@ -125,7 +130,13 @@ def update_graph(click_data):
         fig.add_trace(go.Scatter(x=[point[0]], y=[point[1]], mode='markers', marker=dict(size=12,
             color='rgb(255, 0, 127)'), showlegend=False, hovertemplate="<br>x=%{x}</br>y=%{y}<extra></extra>"))
 
-    return fig 
+    fig.update_layout(
+        #dragmode='drawline',
+        newshape=dict(line_color='magenta', line_width=4),
+        title_text='Crab Nebula: In zoom mode, click to mark any pixel.'
+    )
+    
+    return fig
 
 
 #Code for clicking on a plot
@@ -163,6 +174,12 @@ def update_graph(click_data):
     for point in graph_clicked_points:
         fig.add_trace(go.Scatter(x=[point[0]], y=[point[1]], mode='markers', marker=dict(size=12,
             color='rgb(255, 0, 127)'), showlegend=False, hovertemplate="<br>x=%{x}</br>y=%{y}<extra></extra>"))
+
+    fig.update_layout(
+        #dragmode='drawline',
+        newshape=dict(line_color='green', line_width=4),
+        title_text='Random dots: in zoom mode click to mark any data point.'
+    )
 
     return fig
 

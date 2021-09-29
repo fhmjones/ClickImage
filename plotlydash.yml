@@ -1,0 +1,15 @@
+name: plotlydash
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.9.*
+  - pandas
+  - numpy
+  - matplotlib
+  - plotly
+  - flask
+  - dash
+  - scikit-image
+  - jupyter=1.*
+  - pip

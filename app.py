@@ -22,6 +22,7 @@ from dash.dependencies import Input, Output
 import plotly.express as px
 from skimage import io
 import numpy as np
+import json
 
 #import mydcc
 
@@ -34,6 +35,9 @@ app = dash.Dash(
     external_stylesheets=external_stylesheets
 )
 
+
+def clicked_points_dict(obj):
+    return obj.__dict__
 
 
 app.layout = html.Div([
@@ -87,8 +91,9 @@ app.layout = html.Div([
                                        'hoverClosestCartesian'],
             'modeBarButtonsToAdd': ['drawline', 'drawcircle', 'eraseshape'] 
         }
-    )
-
+    ),
+    dcc.Store(id='image_clicked_points', data=json.dumps([], default=clicked_points_dict), storage_type='memory'),
+    dcc.Store(id='graph_clicked_points', data=json.dumps([], default=clicked_points_dict), storage_type='memory'),
 ], style={'width': '800px'}
 )
 
@@ -96,18 +101,18 @@ app.layout = html.Div([
 
 #Code for clicking on an image
 
-#global variable to keep track of clicked points
-image_clicked_points = []
-
 # The callback function with it's app.callback wrapper.
 @app.callback(
     Output('image', 'figure'),
+    Output('image_clicked_points', 'data'),
     Input('image', 'clickData'),
+    Input('image_clicked_points', 'data'),
     )    
-def update_graph(click_data):
-    global image_clicked_points
+def update_graph(click_data, image_clicked_points_json):
+    #DESERIALIZE
+    image_clicked_points = json.loads(image_clicked_points_json)
     #images in plotly from: https://plotly.com/python/imshow/
-    img = io.imread('https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/Crab_Nebula.jpg/240px-Crab_Nebula.jpg')
+    img = io.imread('Crab_Nebula.jpg')
     fig = px.imshow(img)
 
     #customizing the hover labels
@@ -136,21 +141,22 @@ def update_graph(click_data):
         title_text='Crab Nebula: In zoom mode, click to mark any pixel.'
     )
     
-    return fig
+    return fig, json.dumps(image_clicked_points, default=clicked_points_dict)
 
 
 #Code for clicking on a plot
 
-#global variable to keep track of clicked points
-graph_clicked_points = []
 
 # The callback function with it's app.callback wrapper.
 @app.callback(
     Output('graph', 'figure'),
+    Output('graph_clicked_points', 'data'),
     Input('graph', 'clickData'),
+    Input('graph_clicked_points', 'data'),
     )
-def update_graph(click_data):
-    global graph_clicked_points
+def update_graph(click_data, graph_clicked_points_json):
+    # DESERIALIZE
+    graph_clicked_points = json.loads(graph_clicked_points_json)
     #images in plotly from: https://plotly.com/python/imshow/
     np.random.seed(42)
     random_x = np.random.randint(1, 101, 100)
@@ -180,8 +186,8 @@ def update_graph(click_data):
         newshape=dict(line_color='green', line_width=4),
         title_text='Random dots: in zoom mode click to mark any data point.'
     )
-
-    return fig
+    
+    return fig, json.dumps(graph_clicked_points, default=clicked_points_dict)
 
 if __name__ == '__main__':
     app.run_server(debug=True, host='0.0.0.0', port=8050)
